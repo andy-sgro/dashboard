@@ -12,6 +12,23 @@ const scl = 15;
 const colourBottom = "rgb(56, 94, 231)";
 const colourTop = "rgb(34, 236, 87)";
 
+ /**
+   * \brief   Averages the city data.
+   * @param   cityData : The array of DataPoint describing the city.
+   * @returns Returns the average of the city's DataPoint values.
+   */
+function avgCityData(cityData: DataPoint[]) : number {
+  let sum = 0.0;
+  let numElements = 0;
+  cityData.forEach((d) => addDataPointElement(d.value));
+  function addDataPointElement(dataPointValue: string) {
+    sum +=  parseFloat(dataPointValue);
+    ++numElements;
+  }
+  let avg = sum / numElements;
+  return avg;
+}
+
 export class Barplot {
   parentId: string;
   canvas: any;
@@ -222,6 +239,8 @@ export class Barplot {
     }
   }
 
+ 
+
   /** Ran once on screen load, instantiates every d3 elem in second panel
    */
   plot(dataArray: DataPoint[], min: number[], max: number[]): void {
@@ -278,6 +297,16 @@ export class Barplot {
       })
       .attr("stroke", "rgba(0,0,0,0)")
       .attr("pointer-events", "none");
+
+    let avg = widthScale(avgCityData(dataArray));
+
+    // add the horizontal average line
+    this.canvas.append('line')
+      .attr('x1', avg)
+      .attr('y1', 0)
+      .attr('x2', avg)
+      .attr('y2', this.height)
+      .attr('stroke', 'red');
 
     // add the x Axis
     this.canvas.append("g").attr("class", "x axis").call(this.getXAxis, this);
@@ -401,6 +430,35 @@ export class Barplot {
           d3.select(this).call(attrTween, 800, "fill", colour(d.value));
         }
       });
+
+    let avg = widthScale(avgCityData(dataArray));
+    let newAvgLine = [{x: avg, y: 0}, {x: avg, y: this.height}];
+    let newX = [avg, avg];
+    let newY = [0, this.height];
+
+    var u = this.canvas.select("line")
+      .data(newAvgLine);
+
+    var x = d3.scaleLinear().range([0,width]);
+    x.domain([0, d3.max(data, function(d) { return d.ser1 }) ]);
+
+    this.canvas.select('line').enter()
+      .transition()
+      .duration(3000)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); }))
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 2.5);
+
+    // add the horizontal average line
+    // this.canvas.append('line')
+    //   .attr('x1', avg)
+    //   .attr('y1', 0)
+    //   .attr('x2', avg)
+    //   .attr('y2', this.height)
+    //   .attr('stroke', 'red');
   }
 
   resize() {

@@ -71,6 +71,9 @@ data = [
 avgBarplot.plot(data, [0, 0], [100, 100]);
 avgBarplot.updatePlot(data);
 
+// Used by the avgBarPlot
+let avgCityValues = new Float32Array(data.length);
+
 /******************
  *** ADD D3 TOOL ***
  ******************/
@@ -117,8 +120,14 @@ export const barplot = new Barplot(
 );
 plotData(barplot);
 
+/**
+ * \brief   Populates the Barplot.
+ * \detail  Called only once when the page loads.
+ * @param   barplot : The Barplot to populate.
+ */
 function plotData(barplot: Barplot) {
   let data = Data.getSyncData();
+  console.log("plotData() " + Math.random() * 10);
 
   //only return the first datapoint to populate the graph
   var id = 0;
@@ -158,7 +167,7 @@ function onClick(id: number) {
   header.textContent = name;
   avgBarplot.applyStrokeByName(name);
   recenterDashboard();
-  avgCityData(city.data);
+  avgCityValues[id] = avgCityData(city.data);
   updateAllGraphs(id);
 }
 
